@@ -44,3 +44,11 @@ export const categories = [
   { key: 'power', label: 'Power' },
   { key: 'other', label: 'Other' },
 ];
+
+// Price filter configuration
+// Note: unlike most prices this is not handled in subunits
+export const priceFilterConfig = {
+  min: 0,
+  max: 1000,
+  step: 5,
+};

@@ -15,9 +15,8 @@ If you just want to get the app running quickly to test it out, first install
 ```sh
 git clone git@github.com:sharetribe/flex-template-web.git      # clone this repository
 cd flex-template-web/                                          # change to the cloned directory
-cp .env-template .env                                          # copy the env template file to add your local config
-emacs .env                                                     # in your favorite editor, add the mandatory env vars to the config
 yarn install                                                   # install dependencies
+yarn run config                                                # add the mandatory env vars to your local config
 yarn run dev                                                   # start the dev server, this will open a browser in localhost:3000
 ```
 
@@ -31,6 +30,16 @@ repository instead of cloning it. See the [Customization guide](./docs/customiza
 
 If you want to build your own Flex marketplace by customizing the template application, see the
 [Customization guide](docs/customization-guide.md) documentation.
+
+## Deploying to Heroku
+
+**Note:** Remember to fork the repository before deploying the application. Connecting your own
+Github repository to Heroku will make manual deploys easier.
+
+See [documentation about deploying to Heroku](./docs/deploying-to-production.md#deploying-to-Heroku)
+for more information.
+
+[![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy)
 
 ## Documentation
 

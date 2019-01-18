@@ -1,16 +1,15 @@
 import React from 'react';
-import PropTypes from 'prop-types';
+import { bool, func, shape, string } from 'prop-types';
 import { compose } from 'redux';
 import { Form as FinalForm } from 'react-final-form';
 import { intlShape, injectIntl, FormattedMessage } from 'react-intl';
 import classNames from 'classnames';
 import config from '../../config';
-import { propTypes } from '../../util/types';
+import { LINE_ITEM_NIGHT, LINE_ITEM_DAY, propTypes } from '../../util/types';
 import * as validators from '../../util/validators';
 import { formatMoney } from '../../util/currency';
 import { types as sdkTypes } from '../../util/sdkLoader';
 import { Button, Form, FieldCurrencyInput } from '../../components';
-
 import css from './EditListingPricingForm.css';
 
 const { Money } = sdkTypes;
@@ -28,13 +27,24 @@ export const EditListingPricingFormComponent = props => (
         pristine,
         saveActionMsg,
         updated,
-        updateError,
         updateInProgress,
+        fetchErrors,
       } = fieldRenderProps;
 
+      const unitType = config.bookingUnitType;
+      const isNightly = unitType === LINE_ITEM_NIGHT;
+      const isDaily = unitType === LINE_ITEM_DAY;
+
+      const translationKey = isNightly
+        ? 'EditListingPricingForm.pricePerNight'
+        : isDaily
+        ? 'EditListingPricingForm.pricePerDay'
+        : 'EditListingPricingForm.pricePerUnit';
+
       const pricePerUnitMessage = intl.formatMessage({
-        id: 'EditListingPricingForm.pricePerUnit',
+        id: translationKey,
       });
+
       const pricePlaceholderMessage = intl.formatMessage({
         id: 'EditListingPricingForm.priceInputPlaceholder',
       });
@@ -64,12 +74,18 @@ export const EditListingPricingFormComponent = props => (
       const submitReady = updated && pristine;
       const submitInProgress = updateInProgress;
       const submitDisabled = invalid || disabled || submitInProgress;
+      const { updateListingError, showListingsError } = fetchErrors || {};
 
       return (
         <Form onSubmit={handleSubmit} className={classes}>
-          {updateError ? (
+          {updateListingError ? (
             <p className={css.error}>
               <FormattedMessage id="EditListingPricingForm.updateFailed" />
+            </p>
+          ) : null}
+          {showListingsError ? (
+            <p className={css.error}>
+              <FormattedMessage id="EditListingPricingForm.showListingFailed" />
             </p>
           ) : null}
           <FieldCurrencyInput
@@ -98,17 +114,18 @@ export const EditListingPricingFormComponent = props => (
   />
 );
 
-EditListingPricingFormComponent.defaultProps = { updateError: null };
-
-const { bool, func, string } = PropTypes;
+EditListingPricingFormComponent.defaultProps = { fetchErrors: null };
 
 EditListingPricingFormComponent.propTypes = {
   intl: intlShape.isRequired,
   onSubmit: func.isRequired,
   saveActionMsg: string.isRequired,
   updated: bool.isRequired,
-  updateError: propTypes.error,
   updateInProgress: bool.isRequired,
+  fetchErrors: shape({
+    showListingsError: propTypes.error,
+    updateListingError: propTypes.error,
+  }),
 };
 
 export default compose(injectIntl)(EditListingPricingFormComponent);

@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import PropTypes from 'prop-types';
+import { array, bool, func, number, oneOf, object, shape, string } from 'prop-types';
 import { injectIntl, intlShape } from 'react-intl';
 import { connect } from 'react-redux';
 import { compose } from 'redux';
@@ -52,7 +52,7 @@ export class SearchPageComponent extends Component {
   }
 
   filters() {
-    const { categories, amenities } = this.props;
+    const { categories, amenities, priceFilterConfig } = this.props;
 
     return {
       categoryFilter: {
@@ -62,6 +62,10 @@ export class SearchPageComponent extends Component {
       amenitiesFilter: {
         paramName: 'pub_amenities',
         options: amenities,
+      },
+      priceFilter: {
+        paramName: 'price',
+        config: priceFilterConfig,
       },
     };
   }
@@ -205,6 +209,7 @@ export class SearchPageComponent extends Component {
             primaryFilters={{
               categoryFilter: filters.categoryFilter,
               amenitiesFilter: filters.amenitiesFilter,
+              priceFilter: filters.priceFilter,
             }}
           />
           <ModalInMobile
@@ -229,6 +234,7 @@ export class SearchPageComponent extends Component {
                   onCloseAsModal={() => {
                     onManageDisableScrolling('SearchPage.map', false);
                   }}
+                  messages={intl.messages}
                 />
               ) : null}
             </div>
@@ -249,10 +255,9 @@ SearchPageComponent.defaultProps = {
   tab: 'listings',
   categories: config.custom.categories,
   amenities: config.custom.amenities,
+  priceFilterConfig: config.custom.priceFilterConfig,
   activeListingId: null,
 };
-
-const { array, bool, func, oneOf, object, shape, string } = PropTypes;
 
 SearchPageComponent.propTypes = {
   listings: array,
@@ -268,6 +273,11 @@ SearchPageComponent.propTypes = {
   tab: oneOf(['filters', 'listings', 'map']).isRequired,
   categories: array,
   amenities: array,
+  priceFilterConfig: shape({
+    min: number.isRequired,
+    max: number.isRequired,
+    step: number.isRequired,
+  }),
 
   // from withRouter
   history: shape({
@@ -322,9 +332,14 @@ const mapDispatchToProps = dispatch => ({
 // lifecycle hook.
 //
 // See: https://github.com/ReactTraining/react-router/issues/4671
-const SearchPage = compose(withRouter, connect(mapStateToProps, mapDispatchToProps), injectIntl)(
-  SearchPageComponent
-);
+const SearchPage = compose(
+  withRouter,
+  connect(
+    mapStateToProps,
+    mapDispatchToProps
+  ),
+  injectIntl
+)(SearchPageComponent);
 
 SearchPage.loadData = (params, search) => {
   const queryParams = parse(search, {

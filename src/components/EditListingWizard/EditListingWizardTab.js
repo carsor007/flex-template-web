@@ -2,9 +2,15 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { intlShape } from 'react-intl';
 import routeConfiguration from '../../routeConfiguration';
+import {
+  LISTING_PAGE_PARAM_TYPE_DRAFT,
+  LISTING_PAGE_PARAM_TYPE_NEW,
+  LISTING_PAGE_PARAM_TYPES,
+} from '../../util/urlHelpers';
 import { ensureListing } from '../../util/data';
 import { createResourceLocatorString } from '../../util/routes';
 import {
+  EditListingAvailabilityPanel,
   EditListingDescriptionPanel,
   EditListingFeaturesPanel,
   EditListingLocationPanel,
@@ -15,6 +21,7 @@ import {
 
 import css from './EditListingWizard.css';
 
+export const AVAILABILITY = 'availability';
 export const DESCRIPTION = 'description';
 export const FEATURES = 'features';
 export const POLICY = 'policy';
@@ -23,7 +30,15 @@ export const PRICING = 'pricing';
 export const PHOTOS = 'photos';
 
 // EditListingWizardTab component supports these tabs
-export const SUPPORTED_TABS = [DESCRIPTION, FEATURES, POLICY, LOCATION, PRICING, PHOTOS];
+export const SUPPORTED_TABS = [
+  DESCRIPTION,
+  FEATURES,
+  POLICY,
+  LOCATION,
+  PRICING,
+  AVAILABILITY,
+  PHOTOS,
+];
 
 const pathParamsToNextTab = (params, tab, marketplaceTabs) => {
   const nextTabIndex = marketplaceTabs.findIndex(s => s === tab) + 1;
@@ -34,6 +49,28 @@ const pathParamsToNextTab = (params, tab, marketplaceTabs) => {
   return { ...params, tab: nextTab };
 };
 
+// When user has update draft listing, he should be redirected to next EditListingWizardTab
+const redirectAfterDraftUpdate = (listingId, params, tab, marketplaceTabs, history) => {
+  const currentPathParams = {
+    ...params,
+    type: LISTING_PAGE_PARAM_TYPE_DRAFT,
+    id: listingId,
+  };
+  const routes = routeConfiguration();
+
+  // Replace current "new" path to "draft" path.
+  // Browser's back button should lead to editing current draft instead of creating a new one.
+  if (params.type === LISTING_PAGE_PARAM_TYPE_NEW) {
+    const draftURI = createResourceLocatorString('EditListingPage', routes, currentPathParams, {});
+    history.replace(draftURI);
+  }
+
+  // Redirect to next tab
+  const nextPathParams = pathParamsToNextTab(currentPathParams, tab, marketplaceTabs);
+  const to = createResourceLocatorString('EditListingPage', routes, nextPathParams, {});
+  history.push(to);
+};
+
 const EditListingWizardTab = props => {
   const {
     tab,
@@ -41,55 +78,67 @@ const EditListingWizardTab = props => {
     params,
     errors,
     fetchInProgress,
-    newListingCreated,
+    newListingPublished,
     history,
     images,
+    availability,
     listing,
     handleCreateFlowTabScrolling,
-    handleCreateListing,
+    handlePublishListing,
     onUpdateListing,
     onCreateListingDraft,
     onImageUpload,
     onUpdateImageOrder,
     onRemoveImage,
-    onUpdateListingDraft,
     onChange,
     updatedTab,
     updateInProgress,
     intl,
   } = props;
 
-  const isNew = params.type === 'new';
+  const { type } = params;
+  const isNewURI = type === LISTING_PAGE_PARAM_TYPE_NEW;
+  const isDraftURI = type === LISTING_PAGE_PARAM_TYPE_DRAFT;
+  const isNewListingFlow = isNewURI || isDraftURI;
+
   const currentListing = ensureListing(listing);
   const imageIds = images => {
     return images ? images.map(img => img.imageId || img.id) : null;
   };
 
   const onCompleteEditListingWizardTab = (tab, updateValues) => {
-    if (isNew) {
-      const onUpsertListingDraft =
-        tab !== marketplaceTabs[0] ? onUpdateListingDraft : onCreateListingDraft;
-      onUpsertListingDraft(updateValues);
+    // Normalize images for API call
+    const { images: updatedImages, ...otherValues } = updateValues;
+    const imageProperty =
+      typeof updatedImages !== 'undefined' ? { images: imageIds(updatedImages) } : {};
+    const updateValuesWithImages = { ...otherValues, ...imageProperty };
 
-      if (tab !== marketplaceTabs[marketplaceTabs.length - 1]) {
-        // Create listing flow: smooth scrolling polyfill to scroll to correct tab
-        handleCreateFlowTabScrolling(false);
-        // Redirect to next tab
-        const pathParams = pathParamsToNextTab(params, tab, marketplaceTabs);
-        history.push(
-          createResourceLocatorString('EditListingPage', routeConfiguration(), pathParams, {})
-        );
-      } else {
-        // Normalize images for API call
-        const imageIdArray = imageIds(updateValues.images);
-        handleCreateListing({ ...listing.attributes, images: imageIdArray });
-      }
+    if (isNewListingFlow) {
+      const onUpsertListingDraft = isNewURI
+        ? (tab, updateValues) => onCreateListingDraft(updateValues)
+        : onUpdateListing;
+
+      const upsertValues = isNewURI
+        ? updateValuesWithImages
+        : { ...updateValuesWithImages, id: currentListing.id };
+
+      onUpsertListingDraft(tab, upsertValues)
+        .then(r => {
+          if (tab !== marketplaceTabs[marketplaceTabs.length - 1]) {
+            // Create listing flow: smooth scrolling polyfill to scroll to correct tab
+            handleCreateFlowTabScrolling(false);
+
+            // After successful saving of draft data, user should be redirected to next tab
+            redirectAfterDraftUpdate(r.data.data.id.uuid, params, tab, marketplaceTabs, history);
+          } else {
+            handlePublishListing(currentListing.id);
+          }
+        })
+        .catch(e => {
+          // No need for extra actions
+        });
     } else {
-      const { images: updatedImages, ...rest } = updateValues;
-      // Normalize images for API call
-      const imageProperty =
-        typeof updatedImages !== 'undefined' ? { images: imageIds(updatedImages) } : {};
-      onUpdateListing(tab, { ...rest, id: currentListing.id, ...imageProperty });
+      onUpdateListing(tab, { ...updateValuesWithImages, id: currentListing.id });
     }
   };
 
@@ -106,7 +155,7 @@ const EditListingWizardTab = props => {
 
   switch (tab) {
     case DESCRIPTION: {
-      const submitButtonTranslationKey = isNew
+      const submitButtonTranslationKey = isNewListingFlow
         ? 'EditListingWizard.saveNewDescription'
         : 'EditListingWizard.saveEditDescription';
       return (
@@ -120,7 +169,7 @@ const EditListingWizardTab = props => {
       );
     }
     case FEATURES: {
-      const submitButtonTranslationKey = isNew
+      const submitButtonTranslationKey = isNewListingFlow
         ? 'EditListingWizard.saveNewFeatures'
         : 'EditListingWizard.saveEditFeatures';
       return (
@@ -134,7 +183,7 @@ const EditListingWizardTab = props => {
       );
     }
     case POLICY: {
-      const submitButtonTranslationKey = isNew
+      const submitButtonTranslationKey = isNewListingFlow
         ? 'EditListingWizard.saveNewPolicies'
         : 'EditListingWizard.saveEditPolicies';
       return (
@@ -148,7 +197,7 @@ const EditListingWizardTab = props => {
       );
     }
     case LOCATION: {
-      const submitButtonTranslationKey = isNew
+      const submitButtonTranslationKey = isNewListingFlow
         ? 'EditListingWizard.saveNewLocation'
         : 'EditListingWizard.saveEditLocation';
       return (
@@ -162,7 +211,7 @@ const EditListingWizardTab = props => {
       );
     }
     case PRICING: {
-      const submitButtonTranslationKey = isNew
+      const submitButtonTranslationKey = isNewListingFlow
         ? 'EditListingWizard.saveNewPricing'
         : 'EditListingWizard.saveEditPricing';
       return (
@@ -175,17 +224,32 @@ const EditListingWizardTab = props => {
         />
       );
     }
+    case AVAILABILITY: {
+      const submitButtonTranslationKey = isNewListingFlow
+        ? 'EditListingWizard.saveNewAvailability'
+        : 'EditListingWizard.saveEditAvailability';
+      return (
+        <EditListingAvailabilityPanel
+          {...panelProps(AVAILABILITY)}
+          availability={availability}
+          submitButtonText={intl.formatMessage({ id: submitButtonTranslationKey })}
+          onSubmit={values => {
+            onCompleteEditListingWizardTab(tab, values);
+          }}
+        />
+      );
+    }
     case PHOTOS: {
-      const submitButtonTranslationKey = isNew
+      const submitButtonTranslationKey = isNewListingFlow
         ? 'EditListingWizard.saveNewPhotos'
         : 'EditListingWizard.saveEditPhotos';
 
-      // newListingCreated and fetchInProgress are flags for the last wizard tab
+      // newListingPublished and fetchInProgress are flags for the last wizard tab
       return (
         <EditListingPhotosPanel
           {...panelProps(PHOTOS)}
           submitButtonText={intl.formatMessage({ id: submitButtonTranslationKey })}
-          newListingCreated={newListingCreated}
+          newListingPublished={newListingPublished}
           fetchInProgress={fetchInProgress}
           images={images}
           onImageUpload={onImageUpload}
@@ -203,7 +267,6 @@ const EditListingWizardTab = props => {
 };
 
 EditListingWizardTab.defaultProps = {
-  errors: null,
   listing: null,
   updatedTab: null,
 };
@@ -214,21 +277,24 @@ EditListingWizardTab.propTypes = {
   params: shape({
     id: string.isRequired,
     slug: string.isRequired,
-    type: oneOf(['new', 'edit']).isRequired,
+    type: oneOf(LISTING_PAGE_PARAM_TYPES).isRequired,
     tab: oneOf(SUPPORTED_TABS).isRequired,
   }).isRequired,
   errors: shape({
-    createListingsError: object,
+    createListingDraftError: object,
+    publishListingError: object,
     updateListingError: object,
     showListingsError: object,
     uploadImageError: object,
   }).isRequired,
   fetchInProgress: bool.isRequired,
-  newListingCreated: bool.isRequired,
+  newListingPublished: bool.isRequired,
   history: shape({
     push: func.isRequired,
+    replace: func.isRequired,
   }).isRequired,
   images: array.isRequired,
+  availability: object.isRequired,
 
   // We cannot use propTypes.listing since the listing might be a draft.
   listing: shape({
@@ -243,13 +309,12 @@ EditListingWizardTab.propTypes = {
   }),
 
   handleCreateFlowTabScrolling: func.isRequired,
-  handleCreateListing: func.isRequired,
+  handlePublishListing: func.isRequired,
   onUpdateListing: func.isRequired,
   onCreateListingDraft: func.isRequired,
   onImageUpload: func.isRequired,
   onUpdateImageOrder: func.isRequired,
   onRemoveImage: func.isRequired,
-  onUpdateListingDraft: func.isRequired,
   onChange: func.isRequired,
   updatedTab: string,
   updateInProgress: bool.isRequired,

@@ -3,6 +3,7 @@ import * as ActivityFeed from './components/ActivityFeed/ActivityFeed.example';
 import * as AddImages from './components/AddImages/AddImages.example';
 import * as Avatar from './components/Avatar/Avatar.example';
 import * as BookingBreakdown from './components/BookingBreakdown/BookingBreakdown.example';
+import * as BookingPanel from './components/BookingPanel/BookingPanel.example';
 import * as Button from './components/Button/Button.example';
 import * as ExpandingTextarea from './components/ExpandingTextarea/ExpandingTextarea.example';
 import * as FieldBirthdayInput from './components/FieldBirthdayInput/FieldBirthdayInput.example';
@@ -13,10 +14,13 @@ import * as FieldCurrencyInput from './components/FieldCurrencyInput/FieldCurren
 import * as FieldDateInput from './components/FieldDateInput/FieldDateInput.example';
 import * as FieldDateRangeInput from './components/FieldDateRangeInput/FieldDateRangeInput.example';
 import * as FieldPhoneNumberInput from './components/FieldPhoneNumberInput/FieldPhoneNumberInput.example';
+import * as FieldRadioButton from './components/FieldRadioButton/FieldRadioButton.example';
+import * as FieldRangeSlider from './components/FieldRangeSlider/FieldRangeSlider.example';
 import * as FieldReviewRating from './components/FieldReviewRating/FieldReviewRating.example';
 import * as FieldSelect from './components/FieldSelect/FieldSelect.example';
 import * as FieldTextInput from './components/FieldTextInput/FieldTextInput.example';
 import * as Footer from './components/Footer/Footer.example';
+import * as IconAdd from './components/IconAdd/IconAdd.example';
 import * as IconBannedUser from './components/IconBannedUser/IconBannedUser.example';
 import * as IconCheckmark from './components/IconCheckmark/IconCheckmark.example';
 import * as IconClose from './components/IconClose/IconClose.example';
@@ -43,7 +47,9 @@ import * as Modal from './components/Modal/Modal.example';
 import * as ModalInMobile from './components/ModalInMobile/ModalInMobile.example';
 import * as NamedLink from './components/NamedLink/NamedLink.example';
 import * as PaginationLinks from './components/PaginationLinks/PaginationLinks.example';
+import * as PriceFilter from './components/PriceFilter/PriceFilter.example';
 import * as PropertyGroup from './components/PropertyGroup/PropertyGroup.example';
+import * as RangeSlider from './components/RangeSlider/RangeSlider.example';
 import * as ResponsiveImage from './components/ResponsiveImage/ResponsiveImage.example';
 import * as ReviewRating from './components/ReviewRating/ReviewRating.example';
 import * as Reviews from './components/Reviews/Reviews.example';
@@ -54,11 +60,11 @@ import * as StripeBankAccountTokenInputField from './components/StripeBankAccoun
 import * as TabNav from './components/TabNav/TabNav.example';
 import * as TabNavHorizontal from './components/TabNavHorizontal/TabNavHorizontal.example';
 import * as Tabs from './components/Tabs/Tabs.example';
-import * as TopbarDesktop from './components/TopbarDesktop/TopbarDesktop.example';
 import * as UserCard from './components/UserCard/UserCard.example';
 
 // forms
 import * as BookingDatesForm from './forms/BookingDatesForm/BookingDatesForm.example';
+import * as EditListingAvailabilityForm from './forms/EditListingAvailabilityForm/EditListingAvailabilityForm.example';
 import * as EditListingDescriptionForm from './forms/EditListingDescriptionForm/EditListingDescriptionForm.example';
 import * as EditListingFeaturesForm from './forms/EditListingFeaturesForm/EditListingFeaturesForm.example';
 import * as EditListingLocationForm from './forms/EditListingLocationForm/EditListingLocationForm.example';
@@ -86,8 +92,10 @@ export {
   Avatar,
   BookingBreakdown,
   BookingDatesForm,
+  BookingPanel,
   Button,
   Colors,
+  EditListingAvailabilityForm,
   EditListingDescriptionForm,
   EditListingFeaturesForm,
   EditListingLocationForm,
@@ -105,10 +113,13 @@ export {
   FieldDateInput,
   FieldDateRangeInput,
   FieldPhoneNumberInput,
+  FieldRadioButton,
+  FieldRangeSlider,
   FieldReviewRating,
   FieldSelect,
   FieldTextInput,
   Footer,
+  IconAdd,
   IconBannedUser,
   IconCheckmark,
   IconClose,
@@ -139,7 +150,9 @@ export {
   PasswordRecoveryForm,
   PasswordResetForm,
   PayoutDetailsForm,
+  PriceFilter,
   PropertyGroup,
+  RangeSlider,
   ResponsiveImage,
   ReviewForm,
   ReviewRating,
@@ -154,7 +167,6 @@ export {
   TabNav,
   TabNavHorizontal,
   Tabs,
-  TopbarDesktop,
   Typography,
   UserCard,
 };

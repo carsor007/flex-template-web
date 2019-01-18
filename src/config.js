@@ -1,5 +1,6 @@
 import * as custom from './marketplace-custom-config.js';
 import defaultLocationSearches from './default-location-searches';
+import { stripePublishableKey, stripeSupportedCountries } from './stripe-config';
 
 const env = process.env.REACT_APP_ENV;
 const dev = process.env.REACT_APP_ENV === 'development';
@@ -32,14 +33,13 @@ const bookingProcessAlias = 'preauth-with-nightly-booking/release-1';
 //
 // Possible values: ['line-item/night', 'line-item/day', 'line-item/units';]
 //
-// Note: if you change this, many of the generic translations will
-// still show information about nights. Make sure to go through the
-// translations when the unit is changed.
+// Note: translations will use different translation keys for night, day or unit
+// depending on the value chosen.
 const bookingUnitType = 'line-item/night';
 
 // Should the application fetch available time slots (currently defined as
 // start and end dates) to be shown on listing page.
-const fetchAvailableTimeSlots = process.env.REACT_APP_AVAILABILITY_ENABLED === 'true';
+const enableAvailability = process.env.REACT_APP_AVAILABILITY_ENABLED === 'true';
 
 // A maximum number of days forwards during which a booking can be made.
 // This is limited due to Stripe holding funds up to 90 days from the
@@ -62,7 +62,7 @@ const currency = process.env.REACT_APP_SHARETRIBE_MARKETPLACE_CURRENCY;
 const listingMinimumPriceSubUnits = 0;
 
 // Sentry DSN (Data Source Name), a client key for authenticating calls to Sentry
-const sentryDsn = process.env.REACT_APP_PUBLIC_SENTRY_DSN;
+const sentryDsn = process.env.REACT_APP_SENTRY_DSN;
 
 // If webapp is using SSL (i.e. it's behind 'https' protocol)
 const usingSSL = process.env.REACT_APP_SHARETRIBE_USING_SSL === 'true';
@@ -79,162 +79,6 @@ const currencyConfig = {
   minimumFractionDigits: 2,
   maximumFractionDigits: 2,
 };
-
-const stripePublishableKey = process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY;
-
-// Stripe only supports payments in certain countries, see full list
-// at https://stripe.com/global
-//
-// We currently only support EU countries, US, and AU.
-const stripeSupportedCountries = [
-  {
-    // Australia
-    code: 'AU',
-    currency: 'AUD',
-    payoutAddressRequired: false,
-    accountConfig: {
-      bsb: true,
-      accountNumber: true,
-    },
-  },
-  {
-    // Austria
-    code: 'AT',
-    currency: 'EUR',
-    payoutAddressRequired: true,
-    accountConfig: {
-      iban: true,
-    },
-  },
-  {
-    // Belgium
-    code: 'BE',
-    currency: 'EUR',
-    payoutAddressRequired: true,
-    accountConfig: {
-      iban: true,
-    },
-  },
-  {
-    // Denmark
-    code: 'DK',
-    currency: 'DKK',
-    payoutAddressRequired: true,
-    accountConfig: {
-      iban: true,
-    },
-  },
-  {
-    // Finland
-    code: 'FI',
-    currency: 'EUR',
-    payoutAddressRequired: true,
-    accountConfig: {
-      iban: true,
-    },
-  },
-  {
-    // France
-    code: 'FR',
-    currency: 'EUR',
-    payoutAddressRequired: true,
-    accountConfig: {
-      iban: true,
-    },
-  },
-  {
-    // Germany
-    code: 'DE',
-    currency: 'EUR',
-    payoutAddressRequired: true,
-    accountConfig: {
-      iban: true,
-    },
-  },
-  {
-    // Ireland
-    code: 'IE',
-    currency: 'EUR',
-    payoutAddressRequired: true,
-    accountConfig: {
-      iban: true,
-    },
-  },
-  {
-    // Italy
-    code: 'IT',
-    currency: 'EUR',
-    payoutAddressRequired: true,
-    accountConfig: {
-      iban: true,
-    },
-  },
-  {
-    // Luxembourg
-    code: 'LU',
-    currency: 'EUR',
-    payoutAddressRequired: true,
-    accountConfig: {
-      iban: true,
-    },
-  },
-  {
-    // Netherlands
-    code: 'NL',
-    currency: 'EUR',
-    payoutAddressRequired: true,
-    accountConfig: {
-      iban: true,
-    },
-  },
-  {
-    // Portugal
-    code: 'PT',
-    currency: 'EUR',
-    payoutAddressRequired: true,
-    accountConfig: {
-      iban: true,
-    },
-  },
-  {
-    // Spain
-    code: 'ES',
-    currency: 'EUR',
-    payoutAddressRequired: true,
-    accountConfig: {
-      iban: true,
-    },
-  },
-  {
-    // Sweden
-    code: 'SE',
-    currency: 'SEK',
-    payoutAddressRequired: true,
-    accountConfig: {
-      iban: true,
-    },
-  },
-  {
-    // United Kingdom
-    code: 'GB',
-    currency: 'GBP',
-    payoutAddressRequired: true,
-    accountConfig: {
-      sortCode: true,
-      accountNumber: true,
-    },
-  },
-  {
-    // United States
-    code: 'US',
-    currency: 'USD',
-    payoutAddressRequired: false,
-    accountConfig: {
-      routingNumber: true,
-      accountNumber: true,
-    },
-  },
-];
 
 // Address information is used in SEO schema for Organization (http://schema.org/PostalAddress)
 const addressCountry = 'FI';
@@ -342,7 +186,7 @@ const config = {
   locale,
   bookingProcessAlias,
   bookingUnitType,
-  fetchAvailableTimeSlots,
+  enableAvailability,
   dayCountAvailableForBooking,
   i18n,
   sdk: {

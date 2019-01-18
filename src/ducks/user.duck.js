@@ -1,9 +1,13 @@
 import omitBy from 'lodash/omitBy';
 import isUndefined from 'lodash/isUndefined';
 import config from '../config';
-import { denormalisedResponseEntities } from '../util/data';
+import { denormalisedResponseEntities, ensureOwnListing } from '../util/data';
 import { storableError } from '../util/errors';
-import { TRANSITION_REQUEST, TRANSITION_REQUEST_AFTER_ENQUIRY } from '../util/types';
+import {
+  LISTING_STATE_DRAFT,
+  TRANSITION_REQUEST,
+  TRANSITION_REQUEST_AFTER_ENQUIRY,
+} from '../util/types';
 import * as log from '../util/log';
 import { authInfo } from './Auth.duck';
 
@@ -275,7 +279,11 @@ export const fetchCurrentUserHasListings = () => (dispatch, getState, sdk) => {
     .query(params)
     .then(response => {
       const hasListings = response.data.data && response.data.data.length > 0;
-      dispatch(fetchCurrentUserHasListingsSuccess(!!hasListings));
+
+      const hasPublishedListings =
+        hasListings &&
+        ensureOwnListing(response.data.data[0]).attributes.state !== LISTING_STATE_DRAFT;
+      dispatch(fetchCurrentUserHasListingsSuccess(!!hasPublishedListings));
     })
     .catch(e => dispatch(fetchCurrentUserHasListingsError(storableError(e))));
 };
@@ -381,31 +389,83 @@ export const createStripeAccount = payoutDetails => (dispatch, getState, sdk) =>
 
   dispatch(stripeAccountCreateRequest());
 
+  const { accountType, country } = payoutDetails;
+
+  let payoutDetailValues;
+  if (accountType === 'company') {
+    payoutDetailValues = payoutDetails['company'];
+  } else if (accountType === 'individual') {
+    payoutDetailValues = payoutDetails['individual'];
+  }
+
   const {
     firstName,
     lastName,
     birthDate,
-    country,
-    streetAddress,
-    postalCode,
-    city,
+    address,
     bankAccountToken,
-  } = payoutDetails;
+    personalIdNumber,
+    companyName,
+    companyTaxId,
+    personalAddress,
+    additionalOwners,
+  } = payoutDetailValues;
 
-  const address = {
-    city,
-    line1: streetAddress,
-    postal_code: postalCode,
+  const hasProvince = address.province && !address.state;
+
+  const addressValue = {
+    city: address.city,
+    line1: address.streetAddress,
+    postal_code: address.postalCode,
+    state: hasProvince ? address.province : address.state ? address.state : '',
   };
+
+  let personalAddressValue;
+  if (personalAddress) {
+    personalAddressValue = {
+      city: personalAddress.city,
+      line1: personalAddress.streetAddress,
+      postal_code: personalAddress.postalCode,
+      state: hasProvince
+        ? personalAddress.province
+        : personalAddress.state
+        ? personalAddress.state
+        : '',
+    };
+  }
+
+  const additionalOwnersValue = additionalOwners
+    ? additionalOwners.map(owner => {
+        return {
+          first_name: owner.firstName,
+          last_name: owner.lastName,
+          dob: owner.birthDate,
+          address: {
+            city: owner.city,
+            line1: owner.streetAddress,
+            postal_code: owner.postalCode,
+            state: hasProvince ? owner.province : owner.state ? owner.state : '',
+          },
+        };
+      })
+    : [];
+
+  const idNumber =
+    country === 'US' ? { ssn_last_4: personalIdNumber } : { personal_id_number: personalIdNumber };
 
   // Params for Stripe SDK
   const params = {
     legal_entity: {
       first_name: firstName,
       last_name: lastName,
-      address: omitBy(address, isUndefined),
+      address: omitBy(addressValue, isUndefined),
       dob: birthDate,
-      type: 'individual',
+      type: accountType,
+      business_name: companyName,
+      business_tax_id: companyTaxId,
+      personal_address: personalAddressValue,
+      additional_owners: additionalOwnersValue,
+      ...idNumber,
     },
     tos_shown_and_accepted: true,
   };

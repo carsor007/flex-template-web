@@ -7,11 +7,21 @@ exports[`EditListingPageComponent matches snapshot 1`] = `
 >
   <withRouter(Connect(TopbarContainerComponent)) />
   <withViewport(InjectIntl(EditListingWizard))
+    availability={
+      Object {
+        "calendar": undefined,
+        "onCreateAvailabilityException": [Function],
+        "onDeleteAvailabilityException": [Function],
+        "onFetchAvailabilityExceptions": [Function],
+        "onFetchBookings": [Function],
+      }
+    }
     currentUser={null}
     errors={
       Object {
-        "createListingsError": null,
+        "createListingDraftError": null,
         "createStripeAccountError": null,
+        "publishListingError": null,
         "showListingsError": null,
         "updateListingError": null,
         "uploadImageError": null,
@@ -25,18 +35,27 @@ exports[`EditListingPageComponent matches snapshot 1`] = `
     }
     id="EditListingWizard"
     images={Array []}
-    newListingCreated={false}
+    listing={
+      Object {
+        "attributes": Object {
+          "publicData": Object {},
+        },
+        "id": null,
+        "images": Array [],
+        "type": "ownListing",
+      }
+    }
+    newListingPublished={false}
     onChange={[Function]}
-    onCreateListing={[Function]}
     onCreateListingDraft={[Function]}
     onImageUpload={[Function]}
     onManageDisableScrolling={[Function]}
     onPayoutDetailsFormChange={[Function]}
     onPayoutDetailsSubmit={[Function]}
+    onPublishListingDraft={[Function]}
     onRemoveImage={[Function]}
     onUpdateImageOrder={[Function]}
     onUpdateListing={[Function]}
-    onUpdateListingDraft={[Function]}
     params={
       Object {
         "id": "id",

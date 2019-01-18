@@ -1,7 +1,8 @@
 # Translations
 
-The Flex template for web supports having a single language for the UI. By default the language is
-English.
+The Flex Template for Web supports having a single language for the UI. Supported languages are
+English and French, English being used by default. For information about changing the language, see
+[here](#changing-the-language).
 
 We are using the [React Intl](https://github.com/yahoo/react-intl) library to translate UI texts and
 to format dates, numbers, and money values.
@@ -130,15 +131,66 @@ More information about adding static content to the application can be found fro
 
 ## Changing the language
 
-For changing the language of the template application:
+If you want the template to use a language that is not supported by default a new translation file
+needs to be added and the messages in it need to be translated:
 
-1.  Copy the default [src/translations/en.json](../src/translations/en.json) English translations
-    file into some other file like `es.json`.
+1. Copy the default [src/translations/en.json](../src/translations/en.json) English translations
+   file into some other file, for example `it.json` for Italian.
 
-1.  Change the messages in the new translations file to the desired language.
+2. Change the messages in the new translations file to the desired language.
 
-1.  In [src/config.js](../src/config.js), change the `locale` variable value to match the new locale
-    (the name of the new translations file, without the extension).
+> Note: we already have a few other language files available in
+> [translations directory](../src/translations/) for you to start customizing translations.
 
-1.  In [src/app.js](../src/app.js), change the translation imports to point to the correct
-    `react-intl` locale and the new translations file you created.
+Once you have the translations file in place:
+
+3. In [src/config.js](../src/config.js), change the `locale` variable value to match the new locale
+   (the name of the new translations file, without the extension), for example:
+
+```js
+const locale = 'it';
+```
+
+4. In [src/app.js](../src/app.js), change the translation imports to point to the correct
+   `react-intl` locale and the new translations file you created, for example:
+
+```js
+import localeData from 'react-intl/locale-data/it';
+import messages from './translations/it.json';
+// If you are using a non-english locale with moment library,
+// you should also import time specific formatting rules for that locale
+import 'moment/locale/it';
+```
+
+Also, in case you will translate the application and develop it forward it is wise to change the
+translations file that the tests use. Normally tests are language agnostic as they use translation
+keys as values. However, when adding new translations you can end up with missing translation keys
+in tests. To change the translation file used in tests change the `messages` variable in
+[src/util/test-helpers.js](../src/util/test-helpers.js) to match your language in use, for example:
+
+```js
+import messages from '../translations/it.json';
+```
+
+## Managing translations
+
+In case you have added a new language translation file and are pulling translation updates to
+`en.json` from the upstream repo there is a command line tool to help keeping the translation files
+in sync. Running the following command in the project root
+
+```
+yarn run translate
+```
+
+will start a command line application:
+
+![Translations CLI](./assets/translations/translations_cli.gif)
+
+The command line application can be used to match a translation file against the English
+translations. If your new translations file follows the `<LANG CODE>.json` naming, the CLI will pick
+it up automatically. In order to improve readability, you can add the language name to the
+`TARGET_LANG_NAMES` map in `scripts/translations.js` if it is not yet in there and the CLI will use
+the correct name for your language instead of the language code when prompting about translations.
+
+In case you wish to use something else than English as the source language, modify the `SOURCE_LANG`
+object in `scripts/translations.js` to match your needs.

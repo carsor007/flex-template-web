@@ -3,10 +3,11 @@
 exports[`ManageListingCard matches snapshot 1`] = `
 <div
   className=""
-  onClick={[Function]}
-  tabIndex={0}
 >
-  <div>
+  <div
+    onClick={[Function]}
+    tabIndex={0}
+  >
     <div>
       <ResponsiveImage
         alt="listing1 title"
@@ -100,37 +101,69 @@ exports[`ManageListingCard matches snapshot 1`] = `
       </div>
       <div>
         <FormattedMessage
-          id="ManageListingCard.perUnit"
+          id="ManageListingCard.perNight"
           values={Object {}}
         />
       </div>
     </div>
     <div>
-      <div
-        className=""
-      >
-        <span
-          key="1"
-          style={
-            Object {
-              "wordBreak": "break-all",
-            }
-          }
+      <div>
+        <InlineTextButton
+          className=""
+          onClick={[Function]}
         >
-          listing1
-        </span>
-         
-        title
+          <span
+            key="1"
+            style={
+              Object {
+                "wordBreak": "break-all",
+              }
+            }
+          >
+            listing1
+          </span>
+           
+          title
+        </InlineTextButton>
       </div>
     </div>
-    <button
-      onClick={[Function]}
-    >
-      <FormattedMessage
-        id="ManageListingCard.edit"
-        values={Object {}}
-      />
-    </button>
+    <div>
+      <NamedLink
+        name="EditListingPage"
+        params={
+          Object {
+            "id": "listing1",
+            "slug": "listing1-title",
+            "tab": "description",
+            "type": "edit",
+          }
+        }
+      >
+        <FormattedMessage
+          id="ManageListingCard.editListing"
+          values={Object {}}
+        />
+      </NamedLink>
+      <span>
+         • 
+      </span>
+      <NamedLink
+        name="EditListingPage"
+        params={
+          Object {
+            "id": "listing1",
+            "slug": "listing1-title",
+            "tab": "availability",
+            "type": "edit",
+          }
+        }
+      >
+        <FormattedMessage
+          id="ManageListingCard.manageAvailability"
+          values={Object {}}
+        />
+      </NamedLink>
+    </div>
   </div>
 </div>
 `;
