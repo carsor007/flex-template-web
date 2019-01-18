@@ -4,42 +4,43 @@
 
 export const amenities = [
   {
-    key: 'towels',
-    label: 'Towels',
+    key: 'local_pickup only',
+    label: 'Local Pickup Only',
   },
   {
-    key: 'bathroom',
-    label: 'Bathroom',
+    key: 'shipping_available',
+    label: 'Shipping Available',
   },
   {
-    key: 'swimming_pool',
-    label: 'Swimming pool',
+    key: 'will_deliver',
+    label: 'Will Deliver',
   },
   {
-    key: 'own_drinks',
-    label: 'Own drinks allowed',
+    key: 'cameraman_included',
+    label: 'Cameraman Included',
   },
   {
-    key: 'jacuzzi',
-    label: 'Jacuzzi',
+    key: 'operator_included',
+    label: 'Operator Included',
   },
   {
-    key: 'audiovisual_entertainment',
-    label: 'Audiovisual entertainment',
+    key: 'sound_engineer_included',
+    label: 'Sound Engineer Included',
   },
   {
-    key: 'barbeque',
-    label: 'Barbeque',
+    key: 'installer_included',
+    label: 'Installer Included',
   },
   {
-    key: 'own_food_allowed',
-    label: 'Own food allowed',
+    key: 'dj_included',
+    label: 'DJ Included',
   },
 ];
 
 export const categories = [
-  { key: 'smoke', label: 'Smoke' },
-  { key: 'electric', label: 'Electric' },
-  { key: 'wood', label: 'Wood' },
+  { key: 'video', label: 'Video' },
+  { key: 'sound', label: 'Sound' },
+  { key: 'lighting', label: 'Lighting' },
+  { key: 'power', label: 'Power' },
   { key: 'other', label: 'Other' },
 ];
